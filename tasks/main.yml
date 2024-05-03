@@ -1,0 +1,71 @@
+---
+- name: Check cAdvisor version
+  ansible.builtin.command:
+    cmd: "{{ cadvisor_bin_path }} --version"
+  register: cadvisor_version_check
+  failed_when: false
+  changed_when: cadvisor_version_check.rc != 0
+  # changed_when: cadvisor_version_check.stdout_lines[0] != "cadvisor version {{ cadvisor_version }}"
+
+- name: Debug cAdvisor version check
+  ansible.builtin.debug:
+    var: cadvisor_version_check.stdout
+
+- name: Create "/tmp/cadvisor/" directory
+  ansible.builtin.file:
+    path: "/tmp/cadvisor/"
+    state: directory
+    mode: "0755"
+    recurse: true
+
+- name: Download cAdvisor binary file
+  # import_tasks: download.yml
+  ansible.builtin.get_url:
+    url: "{{ cadvisor_release_url }}/{{ cadvisor_version }}/cadvisor-{{ cadvisor_version }}-linux-{{ cadvisor_arch }}"
+    dest: "/tmp/cadvisor/"
+    mode: "0755"
+  register: cadvisor_download_check
+  when: cadvisor_version_check is changed
+
+- name: Verify cAdvisor binary file checksum
+  ansible.builtin.import_tasks: checksum.yml
+  when: cadvisor_download_check is changed
+  register: cadvisor_checksum_check
+
+- name: Install cAdvisor
+  ansible.builtin.copy:
+    src: "/tmp/cadvisor/cadvisor-{{ cadvisor_version }}-linux-{{ cadvisor_arch }}"
+    dest: "{{ cadvisor_bin_path }}"
+    mode: "0755"
+    remote_src: true
+  # notify:
+  #   - restart cadvisor
+  when: cadvisor_checksum_check is changed
+  register: cadvisor_install_check
+
+- name: Remove downloaded cAdvisor binary file
+  ansible.builtin.file:
+    path: "/tmp/cadvisor/cadvisor-{{ cadvisor_version }}-linux-{{ cadvisor_arch }}"
+    state: absent
+  when: cadvisor_install_check is changed
+  register: cadvisor_cleanup_check
+
+- name: Copy cAdvisor service
+  ansible.builtin.template:
+    src: cadvisor.service.j2
+    dest: /etc/systemd/system/cadvisor.service
+    mode: "0644"
+  register: cadvisor_service
+  when: cadvisor_install_check is changed
+
+- name: Enable and start cAdvisor service
+  ansible.builtin.service:
+    name: cadvisor
+    state: started
+    enabled: true
+
+- name: Reload systemd daemon if unit file is changed.
+  ansible.builtin.systemd:
+    daemon_reload: true
+  notify: restart cadvisor
+  when: cadvisor_service is changed

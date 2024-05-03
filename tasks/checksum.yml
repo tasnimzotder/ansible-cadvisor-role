@@ -1,0 +1,17 @@
+---
+- name: Perform checksum of the downloaded cAdvisor binary file
+  ansible.builtin.shell: sha256sum /tmp/cadvisor/cadvisor-{{ cadvisor_version }}-linux-{{ cadvisor_arch }}
+  register: cadvisor_checksum_check
+
+
+- name: Debug cAdvisor checksum check
+  ansible.builtin.debug:
+    var: cadvisor_checksum_check.stdout
+
+- name: Compare cAdvisor binary checksum
+  ansible.builtin.fail:
+    msg: "Checksum mismatch for cAdvisor binary file"
+  when: cadvisor_checksum_check.stdout.split()[0] != cadvisor_digest
+  failed_when: cadvisor_checksum_check.stdout.split()[0] != cadvisor_digest
+  changed_when: cadvisor_checksum_check.stdout.split()[0] != cadvisor_digest
+  ignore_errors: true

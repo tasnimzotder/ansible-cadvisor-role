@@ -1,0 +1,15 @@
+galaxy_info:
+  author: Tasnim Zotder
+  description: Install cadvisor on a host
+  license: MIT
+  min_ansible_version: "2.1"
+
+  platforms:
+    - name: Amazon Linux
+    - name: Debian
+    - name: Ubuntu
+    - name: Alpine
+
+  galaxy_tags:
+    - monitoring
+    - cadvisor

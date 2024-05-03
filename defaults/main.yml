@@ -1,0 +1,10 @@
+---
+cadvisor_port: 8080
+cadvisor_version: v0.49.1
+cadvisor_digest: "1d5cc701a3fcdf1e8ed1c86da5304b896a6997d9e6673139e78a6f87812495b0"
+cadvisor_arch: amd64
+cadvisor_bin_path: /usr/local/bin/cadvisor
+cadvisor_restart: always
+cadvisor_state: started
+cadvisor_enabled: true
+cadvisor_release_url: "https://github.com/google/cadvisor/releases/download"

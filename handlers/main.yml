@@ -1,0 +1,7 @@
+---
+# - name: Remove downloaded cAdvisor binary file
+#   ansible.builtin.file:
+#     path: "/tmp/cadvisor/cadvisor-{{ cadvisor_version }}-linux-{{ cadvisor_arch }}"
+#     state: absent
+#   # when: cadvisor_checksum_check is changed
+#   register: cadvisor_cleanup_check

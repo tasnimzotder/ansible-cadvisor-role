@@ -1,0 +1,14 @@
+[Unit]
+Description=cAdvisor Container Monitoring Service
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=cadvisor -logtostderr -port={{ cadvisor_port }}
+Restart=always
+HealthCheckHTTP="http://localhost:{{ cadvisor_port }}/healthz"
+HealthCheckInterval=30s
+HealthCheckTimeout=10s
+
+[Install]
+WantedBy=multi-user.target
